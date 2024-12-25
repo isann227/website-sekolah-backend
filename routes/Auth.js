@@ -83,7 +83,7 @@ router.post('/login', async (req, res) => {
             return res.status(400).json({ status: 'failed', error: 'Email atau password salah' });
         }
 
-        if (!user.is_verified) {
+        if (!user.email_verified_at) {
             return res.status(403).json({ status: 'failed', error: 'Akun belum terverifikasi. Silakan verifikasi email Anda.' });
         }
 
@@ -91,7 +91,7 @@ router.post('/login', async (req, res) => {
         req.session.userRole = user.role;
         const token = await token_controller.createToken(email);
 
-        await logAudit(user.id, user.role, 'Pengguna ini memasuki sistem.', user.nama_lengkap);
+        // await logAudit(user.id, user.role, 'Pengguna ini memasuki sistem.', user.nama_lengkap);
         res.json({
             status: 'success',
             message: 'Login berhasil',
