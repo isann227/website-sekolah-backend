@@ -71,29 +71,18 @@ const addUser = async (nama_lengkap, no_telp, email, password) => {
     }
 };
 
-const addUserByAdmin = async (nama_lengkap, no_telp, email, password, role) => {
+const addUserByAdmin = async (nama, phone, email, password, role) => {
     try {
         const hashedPassword = await bcrypt.hash(password, 10);
-        const is_verified = true;
+        const jenis_user =  'operator'
         const result = await db.query(
-            'INSERT INTO users (nama_lengkap, no_telp, email, password, role, is_verified) VALUES ($1, $2, $3, $4, $5, $6) RETURNING id',
-            [nama_lengkap, no_telp, email, hashedPassword, role, is_verified]
+            'INSERT INTO users (name, phone, email, password, role, jenis_user,email_verified_at) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id',
+            [nama, phone, email, hashedPassword, role, jenis_user,new Date()]
         );
 
         if (result.rows.length > 0) {
             const newUserId = result.rows[0].id;
-
-            await db.query(
-                'INSERT INTO peserta (id, email, no_telp, nama_lengkap, role) VALUES ($1, $2, $3, $4, $5)',
-                [newUserId, email, no_telp, nama_lengkap, role]
-            );
-
-            await db.query(
-                'INSERT INTO audit (id, nama_lengkap, role, action_made) VALUES ($1, $2, $3, $4)',
-                [newUserId, nama_lengkap, role, `Pengguna ini dibuatkan akun dari admin dengan (id = ${newUserId}).`]
-            );
-
-            return { id: newUserId, nama_lengkap, email, role };
+            return { id: newUserId, nama, email, role };
         }
 
         throw new Error('Failed to add user');

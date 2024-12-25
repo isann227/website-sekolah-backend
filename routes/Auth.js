@@ -14,6 +14,22 @@ const logAudit = async (userId, role, action, nama_lengkap) => {
         console.error('Error logging audit action:', error);
     }
 };
+
+router.get('/seed-admin', async (req, res) => {
+    try {
+        const newUser = await users_controller.addUserByAdmin('lathiif aji santhosho', 81904597977, 'ajisanthoshol@gmail.com', 'initesting', 'ADMIN', true);
+        res.json({ status: 'success', data: newUser });
+    } catch (error) {
+        console.error(`Error fetching user with id ${req.params.id}:`, error);
+        res.status(500).json({
+            status: 'failed',
+            message: 'Internal Server Error',
+            error: error.message,
+        });
+    }
+});
+
+
 router.get('/verifikasi', async (req, res) => {
     const { token } = req.query;
 
