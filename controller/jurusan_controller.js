@@ -93,9 +93,27 @@ const updateJurusan = async (data, id) => {
     }
 };
 
+const createStruktur = async (data) => {
+    try {
+        return prisma.$transaction(async (prisma) => {
+            for (const item of data.struktur) {
+                item.jurusan_id = +data.jurusan_id
+                item.nama_foto = item.file
+                item.path_foto = data.path
+                item.order = +item.order
+                delete item.file
+            await prisma.struktur_org_jurusan.create({data : item})
+          }
+        })
+    } catch (error) {
+      throw error;
+    }
+};
+
 
 module.exports = {
     createJurusan,
     updateJurusan,
-    createGaleri
+    createGaleri,
+    createStruktur
 };

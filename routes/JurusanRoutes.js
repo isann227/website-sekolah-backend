@@ -161,6 +161,7 @@ router.post('/galeri', upload.any(), async (req, res) => {
   
       // Kirimkan respons sukses
       return res.status(201).send({
+        status: 'success',
         message: 'Berhasil menyimpan data.',
         statusCode: 201,
         data: body, // Sesuaikan fungsi ini
@@ -168,7 +169,62 @@ router.post('/galeri', upload.any(), async (req, res) => {
     } catch (error) {
       console.warn(error);
       return res.status(500).send({
+        status: 'failed',
         message: 'Terjadi kesalahan.',
+        statusCode: 500,
+        error: error.message,
+      });
+    }
+  });
+
+  router.post('/struktur', upload.any(), async (req, res) => {
+    const body = req.body;
+    const files = req.files;
+  
+    try {
+      // Validasi file
+      if (!files || files.length === 0) {
+        return res.status(400).send({
+            status : 'failed',
+            message: 'Gambar wajib diisi!',
+            statusCode: 400,
+        });
+      }
+  
+      // Validasi jumlah file
+      if (!body.struktur || body.struktur.length !== files.length) {
+        return res.status(400).send({
+            status : 'failed',
+            message: 'Jumlah file tidak sesuai dengan data struktur!',
+            statusCode: 400,
+        });
+      }
+  
+      const struktur = body.struktur; // Pastikan struktur dikirim sebagai JSON string
+  
+      // Proses data struktur
+      struktur.forEach((item, key) => {
+        if (files[key]) {
+          item.file = files[key].filename;
+        }
+      });
+  
+      body.path = uploadDir;
+      body.struktur = struktur;
+  
+      // Simpan data ke database melalui service
+      await jurusan_controller.createStruktur(body);
+  
+      // Kirimkan respons sukses
+      return res.status(201).send({
+        message: 'Berhasil menyimpan data.',
+        statusCode: 201,
+        data: body, // Sesuaikan fungsi ini
+      });
+    } catch (error) {
+      console.error(error);
+      return res.status(500).send({
+        message: 'Terjadi kesalahan saat menyimpan struktur.',
         statusCode: 500,
         error: error.message,
       });
