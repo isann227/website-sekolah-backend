@@ -217,6 +217,7 @@ router.post('/galeri', upload.any(), async (req, res) => {
   
       // Kirimkan respons sukses
       return res.status(201).send({
+        status : 'success',
         message: 'Berhasil menyimpan data.',
         statusCode: 201,
         data: body, // Sesuaikan fungsi ini
@@ -224,7 +225,73 @@ router.post('/galeri', upload.any(), async (req, res) => {
     } catch (error) {
       console.error(error);
       return res.status(500).send({
+        status : 'failed',
         message: 'Terjadi kesalahan saat menyimpan struktur.',
+        statusCode: 500,
+        error: error.message,
+      });
+    }
+  });
+
+  function mappingNullableFile(body, files){
+    // Map files to struktur based on fieldname
+   const mappedFiles = body.struktur.map((struktur, index) => {
+     const matchingFile = files.find(file => file?.fieldname === `struktur[${index}][file]`);
+     return matchingFile || null;
+   });
+
+   // Process the files and body
+   for (let i = 0; i < body.struktur.length; i++) {
+     if (mappedFiles[i]) {
+       body.struktur[i].file = mappedFiles[i]; 
+     } else {
+       body.struktur[i].file = null;
+     }
+   }
+
+   return body
+ }
+
+
+  router.patch('/:id/struktur', upload.any(), async (req, res) => {
+    const id = req.params.id;
+    let body = req.body;
+    const files = req.files;
+  
+    try {
+      // Mapping file yang null
+      body = mappingNullableFile(body, files);
+  
+      // Parsing data struktur jika dikirim sebagai JSON string
+      const struktur = Array.isArray(body.struktur) ? body.struktur : body.struktur;
+  
+      // Proses struktur
+      struktur.forEach((item, key) => {
+        if (item.file) {
+          item.nama_foto = item.file.filename;
+          item.path_foto = uploadDir; // Ganti dengan path yang sesuai
+          console.log(`Mengisi file untuk item dengan index ${key}: ${item.file.filename}`);
+        }
+        delete item.file; // Hapus properti file setelah digunakan
+      });
+  
+      body.struktur = struktur;
+  
+      // Panggil service untuk update struktur
+      await jurusan_controller.updateStruktur(body);
+  
+      // Kirim respons sukses
+      return res.status(200).send({
+        status : 'success',
+        message: 'Berhasil menyimpan data.',
+        statusCode: 200,
+        data:body, // Sesuaikan fungsi ini
+      });
+    } catch (error) {
+      console.error(error);
+      return res.status(500).send({
+        status : 'failed',
+        message: 'Terjadi kesalahan saat mengupdate struktur.',
         statusCode: 500,
         error: error.message,
       });

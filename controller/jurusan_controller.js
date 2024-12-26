@@ -93,6 +93,32 @@ const updateJurusan = async (data, id) => {
     }
 };
 
+const updateStruktur = async (data) => {
+    try {
+        return prisma.$transaction(async (prisma) => {
+          for (const item of data.struktur) {
+
+            const where = {
+              jurusan_id : item.jurusan_id,
+              id : item.id,
+            }
+
+            const params_update = {
+              order : +item.order,
+              jabatan : item.jabatan,
+              nama : item.nama,
+              nama_foto :item.nama_foto,
+              path_foto : item.path
+            }
+
+            await prisma.struktur_org_jurusan.update({where : where, data : params_update});
+        }
+      })
+    } catch (error) {
+      throw error;
+    }
+}
+
 const createStruktur = async (data) => {
     try {
         return prisma.$transaction(async (prisma) => {
@@ -115,5 +141,6 @@ module.exports = {
     createJurusan,
     updateJurusan,
     createGaleri,
-    createStruktur
+    createStruktur,
+    updateStruktur
 };
