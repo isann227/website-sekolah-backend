@@ -14,6 +14,22 @@ const logAudit = async (userId, role, action, nama_lengkap) => {
         console.error('Error logging audit action:', error);
     }
 };
+
+router.get('/seed-admin', async (req, res) => {
+    try {
+        const newUser = await users_controller.addUserByAdmin('lathiif aji santhosho', 81904597977, 'ajisanthoshol@gmail.com', 'initesting', 'SUPER ADMIN', true);
+        res.json({ status: 'success', data: newUser });
+    } catch (error) {
+        console.error(`Error fetching user with id ${req.params.id}:`, error);
+        res.status(500).json({
+            status: 'failed',
+            message: 'Internal Server Error',
+            error: error.message,
+        });
+    }
+});
+
+
 router.get('/verifikasi', async (req, res) => {
     const { token } = req.query;
 
@@ -67,7 +83,7 @@ router.post('/login', async (req, res) => {
             return res.status(400).json({ status: 'failed', error: 'Email atau password salah' });
         }
 
-        if (!user.is_verified) {
+        if (!user.email_verified_at) {
             return res.status(403).json({ status: 'failed', error: 'Akun belum terverifikasi. Silakan verifikasi email Anda.' });
         }
 
@@ -75,7 +91,7 @@ router.post('/login', async (req, res) => {
         req.session.userRole = user.role;
         const token = await token_controller.createToken(email);
 
-        await logAudit(user.id, user.role, 'Pengguna ini memasuki sistem.', user.nama_lengkap);
+        // await logAudit(user.id, user.role, 'Pengguna ini memasuki sistem.', user.nama_lengkap);
         res.json({
             status: 'success',
             message: 'Login berhasil',

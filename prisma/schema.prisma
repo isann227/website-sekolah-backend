@@ -1,0 +1,204 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model users {
+  id                BigInt           @id @default(autoincrement())
+  google_id         String?          @db.VarChar(255)
+  name              String           @db.VarChar(255)
+  username          String?          @db.VarChar(255)
+  email             String           @unique(map: "users_email_unique") @db.VarChar(255)
+  phone             BigInt           @unique(map: "users_phone_unique")
+  email_verified_at DateTime?        @db.Timestamp(0)
+  phone_verified_at DateTime?        @db.Timestamp(0)
+  verify_code       String?          @db.VarChar(255)
+  password          String           @db.VarChar(255)
+  alamat            String?          @db.Text
+  avatar            String?          @db.Text
+  status            String           @default("INACTIVE") @db.VarChar(255)
+  is_logedin        Boolean          @default(false)
+  remember_token    String?          @db.VarChar(100)
+  referal           String?          @db.VarChar(36)
+  referal_id        String?          @db.VarChar(36)
+  role              String           @db.VarChar(255)
+  active_date       DateTime?        @db.Date
+  jenis_user        jenis_user
+  created_at        DateTime?        @db.Timestamp(0)
+  updated_at        DateTime?        @db.Timestamp(0)
+  profile_guru      profile_guru?
+  profile_siswa     profile_siswa?
+  berita            berita[]
+}
+model profile_guru {
+    id                BigInt            @id @default(autoincrement()) 
+    user_id           BigInt            @unique
+    users             users             @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "profile_guru_user_id_foreign")
+    nip               String            @db.VarChar(255)
+    tempat_lahir      String?           @db.VarChar(255)
+    tgl_lahir         DateTime?         @db.Date  
+    golongan          String?           @db.VarChar(255)
+    jenis_pns         String?           @db.VarChar(255)
+}
+
+model profile_siswa {
+    id                BigInt            @id @default(autoincrement()) 
+    user_id           BigInt            @unique
+    users             users             @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "profile_guru_user_id_foreign")
+    nis               String            @db.VarChar(255)
+    tempat_lahir      String?           @db.VarChar(255)
+    tgl_lahir         DateTime?         @db.Date  
+    nm_ibu            String?           @db.VarChar(255)
+    nm_bapak          String?           @db.VarChar(255)
+    th_masuk          String?           @db.VarChar(255)
+    status            status_siswa
+}
+
+model ekskul {
+    id                BigInt              @id @default(autoincrement()) 
+    logo              String?             @db.Text()
+    path_logo         String?             @db.VarChar(255)
+    nama              String              @db.VarChar(255) 
+    sejarah_singkat   String              @db.Text()
+    galeri_ekskul     galeri_ekskul[]   
+    struktur_org_ekskul     struktur_org_ekskul[]
+
+}
+
+model galeri_ekskul {
+    id                BigInt            @id @default(autoincrement()) 
+    ekskul_id         BigInt            
+    judul             String            @db.VarChar(255)
+    deskripsi         String            @db.VarChar(255)
+    path              String            @db.VarChar(255)
+    nama_file         String            @db.VarChar(255)
+    ekskul            ekskul            @relation(fields: [ekskul_id], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "ekskyl_id_foreign")
+}
+
+model struktur_org_ekskul {
+    id                BigInt            @id @default(autoincrement()) 
+    ekskul_id         BigInt            
+    order             Int
+    jabatan           String            @db.VarChar(255)
+    nama_siswa        String            @db.VarChar(255)
+    jurusan           String            @db.VarChar(255)
+    kelas             String            @db.VarChar(255)
+    nama_foto         String?           @db.Text()
+    path_foto         String?           @db.Text()
+    ekskul            ekskul            @relation(fields: [ekskul_id], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "ekskul_id_foreign")
+}
+
+model jurusan {
+    id                BigInt            @id @default(autoincrement()) 
+    logo              String?            @db.Text()
+    path_logo         String?            @db.VarChar(255)
+    nama              String            @db.VarChar(255) 
+    sejarah_singkat   String            @db.Text()
+    galeri_jurusan     galeri_jurusan[] @relation(map: "ekskyl_id_foreign")
+    struktur_org_jurusan     struktur_org_jurusan[] 
+}
+
+model galeri_jurusan {
+    id                BigInt            @id @default(autoincrement()) 
+    jurusan_id        BigInt            
+    judul             String            @db.VarChar(255)
+    deskripsi         String            @db.VarChar(255)
+    path              String            @db.VarChar(255)
+    nama_file         String            @db.VarChar(255)
+    jurusan           jurusan             @relation(fields: [jurusan_id], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "ekskyl_id_foreign")
+}
+
+model struktur_org_jurusan {
+    id                BigInt            @id @default(autoincrement()) 
+    jurusan_id         BigInt            
+    order             Int
+    jabatan           String            @db.VarChar(255)
+    nama              String            @db.VarChar(255)
+    nama_foto         String?           @db.Text()
+    path_foto         String?           @db.Text()
+    jurusan           jurusan             @relation(fields: [jurusan_id], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "struktur_org_id_foreign")
+}
+model galeri {
+    id                BigInt            @id @default(autoincrement()) 
+    jduul             String            @db.VarChar(255)
+    deskripsi         String            @db.VarChar(255)
+    path              String            @db.VarChar(255)
+    nama_file         String            @db.VarChar(255)
+}
+
+model kategori_berita {
+    id                BigInt            @id @default(autoincrement()) 
+    nama              String?            @db.Text()
+    berita            berita?
+}
+
+model berita {
+    id                BigInt            @id @default(autoincrement()) 
+    kategori_id       BigInt            @unique
+    thumbnail_file    String @db.VarChar(255)
+    thumbnail_path    String @db.VarChar(255)
+    judul             String @db.VarChar(255)
+    slug              String @db.VarChar(255)
+    konten            String @db.Text()
+    tanggal           DateTime @db.Date
+    meta_title        String @db.VarChar(255)
+    meta_description  String @db.Text()
+    meta_keywords     String  @db.Text()
+    publish_st        Int @db.SmallInt
+    author_id         BigInt
+    users             users             @relation(fields: [author_id], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "author_id_foreign")
+    kategori_berita   kategori_berita             @relation(fields: [kategori_id], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "kategori_id_foreign")
+}
+
+model fasilitas {
+    id                BigInt            @id @default(autoincrement()) 
+    logo              String?            @db.Text()
+    path_logo         String?            @db.VarChar(255)
+    nama              String            @db.VarChar(255) 
+    sejarah_singkat   String            @db.Text()
+    galeri_fasilitas     galeri_fasilitas[] @relation(map: "galeri_fasilitas_id_foreign")
+}
+
+model galeri_fasilitas {
+    id                BigInt            @id @default(autoincrement()) 
+    fasilitas_id         BigInt            
+    judul             String            @db.VarChar(255)
+    deskripsi         String            @db.VarChar(255)
+    path              String            @db.VarChar(255)
+    nama_file         String            @db.VarChar(255)
+    fasilitas             fasilitas             @relation(fields: [fasilitas_id], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "fasilitas_id_foreign")
+}
+
+
+enum status_siswa {
+  AKTIF
+  KELUAR
+  ALUMNI
+}
+
+model banner {
+    id                BigInt           @id @default(autoincrement())
+    judul             String           @db.VarChar(255)
+    path              String           @db.Text
+    image_name        String           @db.Text
+    display_st        Display_st       @default(display)
+    created_at        DateTime?        @db.Timestamp(0)
+    updated_at        DateTime?        @db.Timestamp(0)
+}
+
+
+enum Display_st {
+  draft
+  display
+}
+
+enum jenis_user {
+  operator
+  guru
+  siswa
+}

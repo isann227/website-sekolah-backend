@@ -94,6 +94,7 @@ router.get('/:id', verifyUser, async (req, res) => {
     }
 });
 
+
 router.post('/linkReset', async (req, res) => {
     try {
         const user = await users_controller.findUserByEmail(req.body.email);
@@ -200,5 +201,7 @@ router.put('/resetByAdmin/:id', async (req, res) => {
         });
     }
 });
+
+
 
 module.exports = router;

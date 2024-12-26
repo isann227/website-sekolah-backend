@@ -34,6 +34,7 @@ const routes = require("./routes/index")
 app.use("/users", routes.usersRouter)
 app.use("/auth", routes.authRouter)
 app.use("/audit", routes.AuditRouter)
+app.use("/jurusan", routes.JurusanRouter)
 
 app.use('/', (req, res) => {
     res.status(404)
