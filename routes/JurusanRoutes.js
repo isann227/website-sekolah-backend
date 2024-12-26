@@ -6,6 +6,7 @@ const { route } = require('./Users');
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
+const { verifyUser, SuperAdminOnly } = require('../middleware/AuthUser');
 
 
 // Ensure the upload directory exists
@@ -26,41 +27,8 @@ const storage = multer.diskStorage({
 const upload = multer({ storage });
 
 
-// router.get('/', async (req, res) => {
-//     try {
-//         const logs = await audit_controller.getAuditLogs();
-//         res.json({
-//             status: 'success',
-//             data: logs
-//         });
-//     } catch (error) {
-//         console.error('Error retrieving audit logs:', error);
-//         res.status(500).json({
-//             status: 'failed',
-//             message: 'Internal Server Error',
-//             error: error.message
-//         });
-//     }
-// });
 
-// router.get('/all', async (req, res) => {
-//     try {
-//         const allLogs = await audit_controller.getAllAuditLogs();
-//         res.json({
-//             status: 'success',
-//             data: allLogs
-//         });
-//     } catch (error) {
-//         console.error('Error retrieving all audit logs:', error);
-//         res.status(500).json({
-//             status: 'failed',
-//             message: 'Internal Server Error',
-//             error: error.message
-//         });
-//     }
-// });
-
-router.post('/add',  upload.single('logo'), async (req, res) => {
+router.post('/add',verifyUser, SuperAdminOnly, upload.single('logo'), async (req, res) => {
     try {
         const body = req.body
         file = req.file
@@ -88,7 +56,7 @@ router.post('/add',  upload.single('logo'), async (req, res) => {
     }
 })
 
-router.patch('/:id', upload.single('logo'), async (req, res) => {
+router.patch('/:id', verifyUser, SuperAdminOnly,upload.single('logo'), async (req, res) => {
     try {
         const { id } = req.params;
         const body = req.body
@@ -122,7 +90,7 @@ router.patch('/:id', upload.single('logo'), async (req, res) => {
 });
 
 
-router.post('/galeri', upload.any(), async (req, res) => {
+router.post('/galeri',verifyUser, SuperAdminOnly, upload.any(), async (req, res) => {
     const body = req.body;
     const files = req.files;
   
@@ -177,7 +145,7 @@ router.post('/galeri', upload.any(), async (req, res) => {
     }
   });
 
-  router.post('/struktur', upload.any(), async (req, res) => {
+  router.post('/struktur', verifyUser, SuperAdminOnly, upload.any(), async (req, res) => {
     const body = req.body;
     const files = req.files;
   
@@ -239,7 +207,6 @@ router.post('/galeri', upload.any(), async (req, res) => {
      const matchingFile = files.find(file => file?.fieldname === `struktur[${index}][file]`);
      return matchingFile || null;
    });
-
    // Process the files and body
    for (let i = 0; i < body.struktur.length; i++) {
      if (mappedFiles[i]) {
@@ -253,7 +220,7 @@ router.post('/galeri', upload.any(), async (req, res) => {
  }
 
 
-  router.patch('/:id/struktur', upload.any(), async (req, res) => {
+  router.patch('/:id/struktur',verifyUser, SuperAdminOnly, upload.any(), async (req, res) => {
     const id = req.params.id;
     let body = req.body;
     const files = req.files;
@@ -298,13 +265,128 @@ router.post('/galeri', upload.any(), async (req, res) => {
     }
   });
 
-cron.schedule('0 0 * * *', async () => {
+  router.patch('/:id/galeri', verifyUser, SuperAdminOnly, upload.any(), async (req, res) => {
+    const id = req.params.id;
+    let body = req.body;
+    const files = req.files;
+  
     try {
-        const currentDate = new Date();
-        await audit_controller.updateAuditStatus(null, currentDate); 
+      // Mapping file yang null
+      body = mappingNullableFile(body, files);
+  
+      // Parsing data galeri jika dikirim sebagai JSON string
+      const galeri = Array.isArray(body.galeri) ? body.galeri :body.galeri;
+  
+      // Proses galeri
+      galeri.forEach((item, key) => {
+        if (item.file) {
+          item.nama_foto = item.file.filename;
+          item.path_foto = uploadDir; // Ganti dengan path yang sesuai
+          console.log(`Mengisi file untuk item dengan index ${key}: ${item.file.filename}`);
+        }
+        delete item.file; // Hapus properti file setelah digunakan
+      });
+  
+      body.galeri = galeri;
+  
+      // Panggil service untuk update galeri
+      await jurusan_controller.updateGaleri(body);
+  
+      // Kirim respons sukses
+      return res.status(200).send({
+        status : 'success',
+        message: 'Berhasil menyimpan data.',
+        statusCode: 200,
+        data: body, // Sesuaikan fungsi ini
+      });
     } catch (error) {
-        console.error('Error running cron job for audit log status update:', error);
+      console.error(error);
+      return res.status(500).send({
+        status : 'failed',
+        message: 'Terjadi kesalahan saat mengupdate galeri.',
+        statusCode: 500,
+        error: error.message,
+      });
     }
-});
+  });
 
+  router.get('/:id', async (req, res) => {
+    const id = req.params.id;
+  
+    try {
+      // Panggil service untuk mengambil data berdasarkan ID
+      const data = await jurusan_controller.findOne(Number(id));
+  
+      // Kirim respons sukses
+      return res.status(200).send({
+        status : 'success',
+        message: 'Berhasil mengambil data.',
+        statusCode: 200,
+        data: data, // Sesuaikan fungsi ini
+      });
+    } catch (error) {
+      console.error(error);
+      return res.status(500).send({
+        status : 'failed',
+        message: 'Terjadi kesalahan saat mengambil data.',
+        statusCode: 500,
+        error: error.message,
+      });
+    }
+  });
+
+  router.get('/', async (req, res) => {
+    try {
+      // Ambil query parameters dari request
+      const { search, page, perpage } = req.query;
+  
+      // Panggil service untuk mengambil semua data
+      const data = await jurusan_controller.findAll(
+        search !== undefined ? search : null,
+        page !== undefined ? parseFloat(page) : 1,
+        perpage !== undefined ? parseFloat(perpage) : 10
+      );
+  
+      // Kirim respons sukses
+      return res.status(200).send({
+        status : 'success',
+        message: 'Berhasil mengambil data.',
+        statusCode: 200,
+        data: data, // Sesuaikan fungsi ini
+      });
+    } catch (error) {
+      console.error(error);
+      return res.status(500).send({
+        status : 'failed',
+        message: 'Terjadi kesalahan saat mengambil data.',
+        statusCode: 500,
+        error: error.message,
+      });
+    }
+  });
+
+  // Endpoint DELETE untuk menghapus data
+  router.delete('/:id'), verifyUser, SuperAdminOnly, async (req, res) => {
+    const { id } = req.params;
+  
+    try {
+      // Panggil service untuk menghapus data
+      await jurusan_controller.remove(parseInt(id));
+  
+      // Kirim respons sukses
+      return res.status(200).send({
+        status : 'success',
+        message: 'Berhasil menghapus data.',
+        statusCode: 200,
+      });
+    } catch (error) {
+      console.error(error);
+      return res.status(500).send({
+        status : 'failed',
+        message: 'Terjadi kesalahan saat menghapus data.',
+        statusCode: 500,
+        error: error.message,
+      });
+    }
+  }
 module.exports = router;

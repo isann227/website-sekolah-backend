@@ -17,7 +17,7 @@ const logAudit = async (userId, role, action, nama_lengkap) => {
 
 router.get('/seed-admin', async (req, res) => {
     try {
-        const newUser = await users_controller.addUserByAdmin('lathiif aji santhosho', 81904597977, 'ajisanthoshol@gmail.com', 'initesting', 'ADMIN', true);
+        const newUser = await users_controller.addUserByAdmin('lathiif aji santhosho', 81904597977, 'ajisanthoshol@gmail.com', 'initesting', 'SUPER ADMIN', true);
         res.json({ status: 'success', data: newUser });
     } catch (error) {
         console.error(`Error fetching user with id ${req.params.id}:`, error);

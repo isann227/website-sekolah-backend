@@ -136,11 +136,115 @@ const createStruktur = async (data) => {
     }
 };
 
+const updateGaleri = async (data) => {
+    try {
+        return prisma.$transaction(async (prisma) => {
+          for (const item of data.galeri) {
+
+            const where = {
+              jurusan_id : item.jurusan_id,
+              id : item.id,
+            }
+
+            const params_update = {
+              judul : item.judul,
+              deskripsi : item.deskripsi,
+              path : item.path,
+              nama_file :item.nama_file,
+            }
+
+            await prisma.galeri_jurusan.update({where : where, data : params_update});
+        }
+      })
+    } catch (error) {
+      throw error;
+    }
+}
+
+const findOne = async (id) => {
+  try {
+    return await prisma.jurusan.findFirst({
+      where : {id}, 
+      include : {
+        struktur_org_jurusan:true,
+        galeri_jurusan: true
+      }
+    }
+    ); 
+  } catch (error) {
+    throw error;
+  }
+}
+
+const findAll = async (search, page, perpage) => {
+  const output = {
+    list_data: [],
+    search: search || null,
+    per_page: perpage,
+    page: page,
+    last_page: page,
+    total_data: 0,
+  };
+
+  const filters = {};
+  if (search) {
+    filters.nama = { contains: search }; // Filter berdasarkan "nama"
+  }
+
+  try {
+    // Ambil data sesuai filter dan pagination
+    const dataOut = await prisma.jurusan.findMany({
+      where: filters,
+      include: {
+        struktur_org_jurusan: true,
+        galeri_jurusan: true,
+      },
+      skip: page > 1 ? (page - 1) * perpage : 0,
+      take: perpage,
+    });
+
+    // Hitung total data berdasarkan filter
+    const totalData = await prisma.jurusan.count({
+      where: filters,
+    });
+
+    // Perbarui output
+    output.total_data = totalData;
+    output.last_page = Math.ceil(totalData / perpage);
+    output.list_data = dataOut;
+
+    return output;
+  } catch (error) {
+    console.error(error);
+    throw new Error('Terjadi kesalahan saat mengambil data.');
+  }
+};
+
+const remove = async (id) => {
+  try {
+    return prisma.$transaction(async (prisma) => {
+      return await prisma.jurusan.delete({
+        where : {id:id},
+        include : {
+          struktur_org_jurusan : true,
+          galeri_jurusan : true
+        }
+      });
+    });
+  } catch (error) {
+    throw error;
+  };
+}
+
 
 module.exports = {
     createJurusan,
     updateJurusan,
     createGaleri,
     createStruktur,
-    updateStruktur
+    updateStruktur,
+    updateGaleri,
+    findOne,
+    findAll,
+    remove
 };
