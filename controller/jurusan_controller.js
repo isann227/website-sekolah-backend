@@ -1,6 +1,10 @@
 const db = require('../db.js');
 const bcrypt = require('bcrypt');
 const { sendResetPasswordEmail} = require('../services/mailer');
+const { PrismaClient } = require('@prisma/client')
+
+const prisma = new PrismaClient()
+// use `prisma` in your application to read and write data in your DB
 
 // const getUsers = async () => {
 //     try {
@@ -51,6 +55,27 @@ const addJurusan = async (data) => {
         throw error;
     }
 };
+
+const updateJurusan = async (data, id) => {
+    try {
+      if (!data.logo) {
+        delete data.logo
+        delete data.path_logo
+      }
+  
+      // Panggil service untuk update data
+      await prisma.jurusan.update({
+        where : {
+            id: id
+        }, data : data
+      });
+  
+      return data
+    } catch (error) {
+      console.warn(error);
+        throw error
+    }
+  };
 
 const addUserByAdmin = async (nama, phone, email, password, role) => {
     try {
@@ -176,5 +201,6 @@ module.exports = {
     getUserProfile,
     verifikasi,
     updatePassword,
-    updatePasswordByAdmin
+    updatePasswordByAdmin,
+    updateJurusan
 };

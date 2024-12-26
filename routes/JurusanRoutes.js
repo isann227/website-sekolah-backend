@@ -86,16 +86,29 @@ router.post('/add',  upload.single('logo'), async (req, res) => {
     }
 })
 
-router.post('/update-status', async (req, res) => {
-    const { startDate, endDate } = req.body;
+router.patch('/:id', upload.single('logo'), async (req, res) => {
     try {
-        const updatedLogsCount = await audit_controller.updateAuditStatus(startDate, endDate);
+        const { id } = req.params;
+        const body = req.body
+        const file = req.file;
+
+        if (!body.nama || !body.sejarah_singkat) {
+            return res.status(400).json({ status: 'failed', error: 'Semua field harus diisi' });
+        }
+
+        if (file) {
+            body.logo = file.filename;
+            body.path_logo = uploadDir; // Ganti dengan path yang sesuai
+        }
+        
+        const updatedLogsCount = await jurusan_controller.updateJurusan(body, id);
         res.json({
             status: 'success',
-            message: `${updatedLogsCount} audit logs updated to true`,
+            message: `Update data berhasil`,
+            data: body
         });
     } catch (error) {
-        console.error('Error updating audit log status:', error);
+        console.error(error);
         res.status(500).json({
             status: 'failed',
             message: 'Internal Server Error',
