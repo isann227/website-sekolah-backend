@@ -70,8 +70,9 @@ router.post('/add',  upload.single('logo'), async (req, res) => {
 
         body.logo_path = file.path
         body.logo = file.filename
-        const addJurusan = await jurusan_controller.addJurusan(req.body)
+        const addJurusan = await jurusan_controller.createJurusan(req.body)
         res.json({
+            statusCode: 201,
             status: 'success',
             message: `Berhasil insert data`,
             data: body,
@@ -79,6 +80,7 @@ router.post('/add',  upload.single('logo'), async (req, res) => {
     } catch (error) {
         console.error('error insert jurusan:', error);
         res.status(500).json({
+            statusCode: 500,
             status: 'failed',
             message: 'Internal Server Error',
             error: error.message
@@ -103,6 +105,7 @@ router.patch('/:id', upload.single('logo'), async (req, res) => {
         
         const updatedLogsCount = await jurusan_controller.updateJurusan(body, id);
         res.json({
+            statusCode: 200,
             status: 'success',
             message: `Update data berhasil`,
             data: body
@@ -110,12 +113,67 @@ router.patch('/:id', upload.single('logo'), async (req, res) => {
     } catch (error) {
         console.error(error);
         res.status(500).json({
+            statusCode: 500,
             status: 'failed',
             message: 'Internal Server Error',
             error: error.message
         });
     }
 });
+
+
+router.post('/galeri', upload.any(), async (req, res) => {
+    const body = req.body;
+    const files = req.files;
+  
+    try {
+      // Validasi file
+      if (!files || files.length === 0) {
+        return res.status(400).send({
+            status: 'failed',
+            message: 'Gambar wajib diisi!',
+            statusCode: 400,
+        });
+      }
+      console.log(body.galeri);
+  
+      // Validasi jumlah file
+      if (!body.galeri || body.galeri.length !== files.length) {
+        return res.status(400).send({
+            status: 'failed',
+            message: 'Jumlah file tidak sesuai dengan data galeri!',
+            statusCode: 400,
+        });
+      }
+  
+      const galeri = body.galeri; // Pastikan data galeri dikirim sebagai JSON string
+    console.log(galeri);
+      // Proses data galeri
+      galeri.forEach((item, key) => {
+        item.file = files[key].filename;
+      });
+  
+      body.path = uploadDir;
+      body.galeri = galeri;
+  
+      // Simpan data ke database melalui service
+      await jurusan_controller.createGaleri(body);
+  
+      // Kirimkan respons sukses
+      return res.status(201).send({
+        message: 'Berhasil menyimpan data.',
+        statusCode: 201,
+        data: body, // Sesuaikan fungsi ini
+      });
+    } catch (error) {
+      console.warn(error);
+      return res.status(500).send({
+        message: 'Terjadi kesalahan.',
+        statusCode: 500,
+        error: error.message,
+      });
+    }
+  });
 
 cron.schedule('0 0 * * *', async () => {
     try {
