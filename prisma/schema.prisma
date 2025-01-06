@@ -126,7 +126,7 @@ model struktur_org_jurusan {
 }
 model galeri {
     id                BigInt            @id @default(autoincrement()) 
-    jduul             String            @db.VarChar(255)
+    judul             String            @db.VarChar(255)
     deskripsi         String            @db.VarChar(255)
     path              String            @db.VarChar(255)
     nama_file         String            @db.VarChar(255)

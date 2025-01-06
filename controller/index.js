@@ -5,6 +5,7 @@ const token_controller = require('./token_controller')
 const jurusan_controller = require('./jurusan_controller')
 const ekskul_controller = require('./ekskul_controller')
 const visimisi_controller = require('./visimisi_controller')
+const galeri_controller = require('./galeri_controller')
 
 module.exports = {
     error_log_controller,
@@ -14,4 +15,5 @@ module.exports = {
     jurusan_controller,
     ekskul_controller,
     visimisi_controller,
+    galeri_controller,
 };
