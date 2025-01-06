@@ -37,6 +37,7 @@ app.use("/audit", routes.AuditRouter)
 app.use("/jurusan", routes.JurusanRouter)
 app.use("/ekskul", routes.EkskulRouter)
 app.use("/visimisi", routes.VisimisiRouter)
+app.use("/galeri", routes.GaleriRouter)
 
 app.use('/', (req, res) => {
     res.status(404)
