@@ -174,42 +174,41 @@ router.post('/add',verifyUser, SuperAdminOnly, upload.single('image'), async (re
       });
     }
   })
-<<<<<<< Tabnine <<<<<<<
-  /**//+
-   * Deletes a galeri item by its ID.//+
-   *//+
-   * @param {object} req - The Express request object.//+
-   * @param {object} res - The Express response object.//+
-   * @param {string} req.params.id - The ID of the galeri item to delete.//+
-   * @param {function} verifyUser - Middleware function to verify user authentication.//+
-   * @param {function} SuperAdminOnly - Middleware function to check if the user is a super admin.//+
-   * @param {function} galeri_controller.remove - Service function to remove a galeri item.//+
-   *//+
-   * @returns {object} - The Express response object with status code and message.//+
-   * @throws Will throw an error if the deletion fails.//+
-   *///+
-  router.delete('/:id', verifyUser, SuperAdminOnly, async (req, res) => {//+
-    const { id } = req.params;//+
-  //+
-    try {//+
-      // Panggil service untuk menghapus data//+
-      await galeri_controller.remove(parseInt(id));//+
-  //+
-      // Kirim respons sukses//+
-      return res.status(200).send({//+
-        status: 'success',//+
-        message: 'Berhasil menghapus data.',//+
-        statusCode: 200,//+
-      });//+
-    } catch (error) {//+
-      console.error(error);//+
-      return res.status(500).send({//+
-        status: 'failed',//+
-        message: 'Terjadi kesalahan saat menghapus data.',//+
-        statusCode: 500,//+
-        error: error.message,//+
-      });//+
-    }//+
-  });//+
->>>>>>> Tabnine >>>>>>>// {"conversationId":"be02a1ea-93e4-474d-99b4-3432043aa770","source":"instruct"}
+/**
+ * Deletes a galeri item by its ID.
+ *
+ * @param {object} req - The Express request object.
+ * @param {object} res - The Express response object.
+ * @param {string} req.params.id - The ID of the galeri item to delete.
+ * @param {function} verifyUser - Middleware function to verify user authentication.
+ * @param {function} SuperAdminOnly - Middleware function to check if the user is a super admin.
+ * @param {function} galeri_controller.remove - Service function to remove a galeri item.
+ *
+ * @returns {object} - The Express response object with status code and message.
+ * @throws Will throw an error if the deletion fails.
+ */
+router.delete('/:id', verifyUser, SuperAdminOnly, async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    // Panggil service untuk menghapus data
+    await galeri_controller.remove(parseInt(id));
+
+    // Kirim respons sukses
+    return res.status(200).send({
+      status: 'success',
+      message: 'Berhasil menghapus data.',
+      statusCode: 200,
+    });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).send({
+      status: 'failed',
+      message: 'Terjadi kesalahan saat menghapus data.',
+      statusCode: 500,
+      error: error.message,
+    });
+  }
+});
+
 module.exports = router;

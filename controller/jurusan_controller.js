@@ -6,41 +6,15 @@ const { PrismaClient } = require('@prisma/client')
 const prisma = new PrismaClient()
 // use `prisma` in your application to read and write data in your DB
 
-// const getUsers = async () => {
-//     try {
-//         const result = await db.query("SELECT id, email, nama_lengkap FROM users ORDER BY nama_lengkap ASC");
-//         return result.rows;
-//     } catch (error) {
-//         console.error('Error fetching user list:', error);
-//         throw error;
-//     }
-// };
-
-// const findUserByEmail = async (email) => {
-//     try {
-//         const result = await db.query('SELECT * FROM users WHERE email = $1', [email]);
-//         if (result.rows.length === 0) {
-//             return null;
-//         }
-//         return result.rows[0];
-//     } catch (error) {
-//         console.error('Error finding user by email:', error);
-//         throw error;
-//     }
-// };
-
-// const findUserById = async (userId) => {
-//     try {
-//         const result = await db.query('SELECT * FROM users WHERE id = $1', [userId]);
-//         if (result.rows.length === 0) {
-//             return null;
-//         }
-//         return result.rows[0];
-//     } catch (error) {
-//         console.error(`Error finding user with id ${userId}:`, error);
-//         throw error;
-//     }
-// };
+const getJurusan = async () => {
+  try {
+      const result = await db.query("SELECT * FROM jurusan ORDER BY id ASC");
+      return result.rows;
+  } catch (error) {
+      console.error('Error fetching jurusan list:', error);
+      throw error;
+  }
+};
 
 const createJurusan = async (data) => {
     try {
@@ -238,6 +212,7 @@ const remove = async (id) => {
 
 
 module.exports = {
+    getJurusan,
     createJurusan,
     updateJurusan,
     createGaleri,
