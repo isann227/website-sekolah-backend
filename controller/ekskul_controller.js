@@ -3,6 +3,16 @@ const { PrismaClient } = require('@prisma/client')
 
 const prisma = new PrismaClient()
 
+const getEkskul = async () => {
+  try {
+      const result = await db.query("SELECT * FROM ekskul ORDER BY id ASC");
+      return result.rows;
+  } catch (error) {
+      console.error('Error fetching ekskul list:', error);
+      throw error;
+  }
+};
+
 const createEkskul = async (data) => {
     try {
         const result = await db.query(
@@ -202,6 +212,7 @@ const updateEkskul = async (data, id) => {
 
 
 module.exports = {
+    getEkskul,
     createEkskul,
     updateEkskul,
     createGaleri,

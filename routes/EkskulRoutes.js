@@ -25,7 +25,22 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage });
 
-
+router.get("/", async (req, res) => {
+  try {
+    const ekskul = await ekskul_controller.getEkskul();
+    res.setHeader("Cache-Control", "no-cache");
+    res.status(200).json({
+      success: true,
+      data: ekskul,
+    });
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      message: "Server Error",
+      error: err.message,
+    });
+  }
+});
 
 router.post('/add',verifyUser, SuperAdminOnly, upload.single('logo'), async (req, res) => {
     try {

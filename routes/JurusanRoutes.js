@@ -26,7 +26,22 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage });
 
-
+router.get("/", async (req, res) => {
+  try {
+    const jurusan = await jurusan_controller.getJurusan();
+    res.setHeader("Cache-Control", "no-cache");
+    res.status(200).json({
+      success: true,
+      data: jurusan,
+    });
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      message: "Server Error",
+      error: err.message,
+    });
+  }
+});
 
 router.post('/add',verifyUser, SuperAdminOnly, upload.single('logo'), async (req, res) => {
     try {
